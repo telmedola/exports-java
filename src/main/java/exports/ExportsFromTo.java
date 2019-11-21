@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
-public @interface ExportsData {
- public String exportName() default "";
+public @interface ExportsFromTo {
+    public String[] from() default "";
+    public String[] to() default "";
 }

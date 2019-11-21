@@ -1,6 +1,7 @@
 package exports;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -15,10 +16,7 @@ import java.sql.Time;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 
 public class Exports<T> {
     public String CSVSeparator = ";";
@@ -62,8 +60,28 @@ public class Exports<T> {
                         SimpleDateFormat fmt = new SimpleDateFormat(custom.pattern(), local);
                         return fmt.format(obj);
                     } else if ((field.getType().equals(Number.class)) || (field.getType().equals(Float.class))) {
-                        DecimalFormat fmtNumber = new DecimalFormat( custom.pattern() );
+                        DecimalFormat fmtNumber = new DecimalFormat(custom.pattern());
                         return fmtNumber.format(obj);
+                    } else
+                        return obj.toString();
+                } else if (field.getAnnotation(ExportsFromTo.class) != null) {
+                    ExportsFromTo custom = field.getAnnotation(ExportsFromTo.class);
+                    List<String> listFrom = Arrays.asList(custom.from());
+                    List<String> listTo = Arrays.asList(custom.to());
+                    String retorno = "";
+                    if (listFrom.contains(obj.toString())) {
+                        int item = 0;
+                        for (String i : listFrom){
+                            if (i.equals(obj.toString())) {
+                                retorno = listTo.get(item);
+                                break;
+                            }
+                            item++;
+                        }
+                        if (retorno.isEmpty()) {
+                            retorno = obj.toString();
+                        }
+                        return retorno;
                     } else
                         return obj.toString();
                 } else {
@@ -79,9 +97,9 @@ public class Exports<T> {
 
         String retorno;
         byte[] b;
-        if (field.getAnnotation(ExportsData.class) != null) {
-            ExportsData custom = field.getAnnotation(ExportsData.class);
-            b  = custom.exportName().getBytes();
+        if (field.getAnnotation(ExportsName.class) != null) {
+            ExportsName custom = field.getAnnotation(ExportsName.class);
+            b  = custom.name().getBytes();
             retorno = new String(b,StandardCharsets.UTF_8);
         } else {
             retorno = field.getName();
@@ -102,7 +120,8 @@ public class Exports<T> {
             for (T item : lista) {
                 Field[] fields = item.getClass().getDeclaredFields();
                 for (Field f : fields) {
-                    cabecalho = cabecalho + nameToStr(item,f) + this.CSVSeparator;
+                    if (f.getAnnotation(JsonIgnore.class) == null)
+                        cabecalho = cabecalho + nameToStr(item,f) + this.CSVSeparator;
                 }
                 cabecalho = cabecalho.substring(0,cabecalho.length()-1)+"\n";
                 output.write(cabecalho.getBytes());
@@ -114,7 +133,8 @@ public class Exports<T> {
                 valores.setLength(0);
                 Field[] fields = item.getClass().getDeclaredFields();
                 for (Field f : fields) {
-                    valores.append(valueToStr(item, f) + this.CSVSeparator);
+                    if (f.getAnnotation(JsonIgnore.class) == null)
+                        valores.append(valueToStr(item, f) + this.CSVSeparator);
                 }
                 valores.delete(valores.length()-1,valores.length());
                 valores.append("\n");
@@ -154,6 +174,9 @@ public class Exports<T> {
             for (T item : lista) {
                 Field[] fields = item.getClass().getDeclaredFields();
                 for (Field f : fields) {
+                    if (f.getAnnotation(JsonIgnore.class) != null)
+                        continue;
+
                     headerCell = header.createCell(coluna);
                     headerCell.setCellValue(nameToStr(item,f));
                     headerCell.setCellStyle(headerStyle);
@@ -175,6 +198,8 @@ public class Exports<T> {
 
                 coluna = 0;
                 for (Field f : fields) {
+                    if (f.getAnnotation(JsonIgnore.class) != null)
+                        continue;;
                     cell = row.createCell(coluna);
                     cell.setCellValue(valueToStr(item, f));
 
