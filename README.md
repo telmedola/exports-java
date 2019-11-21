@@ -20,33 +20,43 @@ dependencies {
 ```
 public class TestExport {
 	
-  public static void main(String[] args) throws IllegalAccessException, IOException, ParseException {
-    List<Test> lista = new ArrayList();
+public static void main(String[] args) throws IllegalAccessException, IOException, ParseException {
 
-	  Test a;
-	  for (int i = 0; i<3; i++){
-		  a = new Test();
-		  a.setId(Long.parseLong(Integer.toString(i)));
-		  a.setName("Name "+ Integer.toString(i));
-		  a.setInclude(new Date());
+		List<Test> lista = new ArrayList();
 
-		  lista.add(a);
-	  }
+		Test a;
+		for (int i = 0; i<3; i++){
+			a = new Test();
+			a.setId(Long.parseLong(Integer.toString(i)));
+			a.setName("Name "+ Integer.toString(i));
+			a.setInclude(new Date());
+			if (i > 1)
+			    a.setActive("Y");
+			else
+			    a.setActive("N");
+			a.setJoin("Not appear");
 
-	  Exports<Test> export = new Exports<>();
+			lista.add(a);
+		}
 
-	  System.out.println(export.exportListToCSV(lista));
+		Exports<Test> export = new Exports<>();
 
-	  System.out.println(export.exportListToExcel(lista,"Customers"));
-  } 
- }
+		System.out.println(export.exportListToCSV(lista));
+
+		System.out.println(export.exportListToExcel(lista,"Customers"));
+	}
+}
 
 class Test {
     private Long id;
-    @ExportsData(exportName = "name of costumer")
+    @ExportsName(name = "name of costumer")
     private String name;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date include;
+    @ExportsFromTo(from={"Y","N"}, to={"Yes","No"})
+    private String active;
+    @JsonIgnore
+    private String join;
 
     public Long getId() {
         return id;
@@ -70,6 +80,21 @@ class Test {
 
     public void setInclude(Date include) {
         this.include = include;
+    }
+    public String getActive() {
+        return active;
+    }
+
+    public void setActive(String active) {
+        this.active = active;
+    }
+
+    public String getJoin() {
+        return join;
+    }
+
+    public void setJoin(String join) {
+        this.join = join;
     }
 
 }
