@@ -120,7 +120,7 @@ public class Exports<T> {
             for (T item : lista) {
                 Field[] fields = item.getClass().getDeclaredFields();
                 for (Field f : fields) {
-                    if (f.getAnnotation(JsonIgnore.class) == null)
+                    if( (f.getAnnotation(JsonIgnore.class) == null) && (f.getAnnotation(ExportsIgnore.class) == null) )
                         cabecalho = cabecalho + nameToStr(item,f) + this.CSVSeparator;
                 }
                 cabecalho = cabecalho.substring(0,cabecalho.length()-1)+"\n";
@@ -133,7 +133,7 @@ public class Exports<T> {
                 valores.setLength(0);
                 Field[] fields = item.getClass().getDeclaredFields();
                 for (Field f : fields) {
-                    if (f.getAnnotation(JsonIgnore.class) == null)
+                    if( (f.getAnnotation(JsonIgnore.class) == null) && (f.getAnnotation(ExportsIgnore.class) == null) )
                         valores.append(valueToStr(item, f) + this.CSVSeparator);
                 }
                 valores.delete(valores.length()-1,valores.length());
@@ -174,7 +174,7 @@ public class Exports<T> {
             for (T item : lista) {
                 Field[] fields = item.getClass().getDeclaredFields();
                 for (Field f : fields) {
-                    if (f.getAnnotation(JsonIgnore.class) != null)
+                    if( (f.getAnnotation(JsonIgnore.class) != null) || (f.getAnnotation(ExportsIgnore.class) != null) )
                         continue;
 
                     headerCell = header.createCell(coluna);
@@ -198,8 +198,8 @@ public class Exports<T> {
 
                 coluna = 0;
                 for (Field f : fields) {
-                    if (f.getAnnotation(JsonIgnore.class) != null)
-                        continue;;
+                    if( (f.getAnnotation(JsonIgnore.class) != null) || (f.getAnnotation(ExportsIgnore.class) != null) )
+                        continue;
                     cell = row.createCell(coluna);
                     cell.setCellValue(valueToStr(item, f));
 
