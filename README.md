@@ -57,6 +57,8 @@ class Test {
     private String active;
     @JsonIgnore
     private String join;
+    @ExportsIgnore
+    private String notExport;
 
     public Long getId() {
         return id;
